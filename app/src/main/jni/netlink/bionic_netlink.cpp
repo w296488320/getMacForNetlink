@@ -27,10 +27,34 @@
  */
 
 #include "bionic_netlink.h"
+#include "allInclude.h"
+#include <jni.h>
+#include <dlfcn.h>
+#include <android/log.h>
+#include <malloc.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <regex>
+#include <bits/getopt.h>
+#include <asm/unistd.h>
+#include <unistd.h>
+#include <asm/fcntl.h>
+#include<fcntl.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include "Log.h"
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 
 
-//#include "private/ErrnoRestorer.h"
+extern "C" {
+    __inline__ __attribute__((always_inline))  long raw_syscall(long __number, ...);
+}
 
 /**
  * form
@@ -53,11 +77,7 @@ NetlinkConnection::~NetlinkConnection() {
   if (fd_ != -1) close(fd_);
   delete[] data_;
 }
-/**
- * @param type  发送参数的类型,具体获取的内容参考
- * @see rtnetlink.h
- * @return
- */
+
 bool NetlinkConnection::SendRequest(int type) {
   // Rather than force all callers to check for the unlikely event of being
   // unable to allocate 8KiB, check here.
@@ -72,7 +92,6 @@ bool NetlinkConnection::SendRequest(int type) {
   }
 
   // Construct and send the message.
-  // 构造要发送的消息
   struct NetlinkMessage {
     nlmsghdr hdr;
     rtgenmsg msg;
@@ -94,8 +113,7 @@ bool NetlinkConnection::ReadResponses(void callback(void*, nlmsghdr*), void* out
   // Read through all the responses, handing interesting ones to the callback.
   ssize_t bytes_read;
 
-  while ((bytes_read = TEMP_FAILURE_RETRY(recv(fd_, data_, size_, 0))) > 0) {
-    //将拿到的data数据进行赋值
+while ((bytes_read = TEMP_FAILURE_RETRY(raw_syscall(__NR_recvfrom,fd_, data_, size_, 0, NULL,0))) > 0) {
     auto* hdr = reinterpret_cast<nlmsghdr*>(data_);
 
     for (; NLMSG_OK(hdr, static_cast<size_t>(bytes_read)); hdr = NLMSG_NEXT(hdr, bytes_read)) {

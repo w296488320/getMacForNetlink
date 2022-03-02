@@ -5,7 +5,7 @@
 
 #include <android/log.h>
 
-#define TAG "Camel"
+#define TAG "Netlink"
 
 #ifdef CAMEL_BUILD_TYPE_NOLOG
 

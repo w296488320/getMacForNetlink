@@ -3,6 +3,11 @@ set(CMAKE_CXX_STANDARD 14)
 #添加内联支持
 enable_language(C ASM)
 
+#开始优化
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O")
+# inline
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
+
 
 include_directories(
         ./
@@ -11,11 +16,16 @@ include_directories(
         ./Substrate/
 )
 
-
+if (${CMAKE_ANDROID_ARCH_ABI} STREQUAL "arm64-v8a")
+    set(syscall netlink/syscall64.s)
+elseif (${CMAKE_ANDROID_ARCH_ABI} STREQUAL "armeabi-v7a")
+    set(syscall netlink/syscall32.s)
+endif ()
 
 find_library(
         log-lib
-        log)
+        log
+)
 
 add_library(
         helloword
@@ -27,12 +37,7 @@ add_library(
         netlink/bionic_netlink.cpp
         netlink/ifaddrs.cpp
 
-        #Substrate
-        Substrate/hde64.c
-        Substrate/SubstrateDebug.cpp
-        Substrate/SubstrateHook.cpp
-        Substrate/SubstratePosixMemory.cpp
-        Substrate/And64InlineHook.cpp
+        ${syscall}
 )
 
 target_link_libraries(
@@ -41,41 +46,6 @@ target_link_libraries(
         ${log-lib}
 )
 
-
-
-
-#---------------------初始化Dobby相关----------------------------------
-
-#Dobby目录,从Git下载下来的zip压缩包,以后更新替换此压缩包即可。
-#Dobby相对Substrate 来说Bug更少&支持短指令
-
-#set(DobbyHome F:/Dobby)
-
-#add_subdirectory(${DobbyHome} dobby)
-
-#设置路径,引入Dobby
-#include_directories(
-#        ${DobbyHome}/include
-#        ${DobbyHome}/source
-#        ${DobbyHome}/builtin-plugin
-#        ${DobbyHome}/builtin-plugin/AndroidRestriction
-#        ${DobbyHome}/builtin-plugin/SymbolResolver
-#        ${DobbyHome}/external/logging
-#)
-#
-#macro(SET_OPTION option value)
-#    set(${option} ${value} CACHE INTERNAL "" FORCE)
-#endmacro()
-#
-#SET_OPTION(DOBBY_DEBUG ON)
-## 关闭shared库,和我们的so 集成到一起。
-#SET_OPTION(DOBBY_GENERATE_SHARED OFF)
-#SET_OPTION(Plugin.LinkerLoadCallback OFF)
-#
-#
-#add_subdirectory(${DobbyHome} dobby.build)
-
-#---------------------初始化Dobby相关----------------------------------
 
 
 

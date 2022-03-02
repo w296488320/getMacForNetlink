@@ -50,8 +50,12 @@ struct ifaddrs {
   char* ifa_name;
   /** Interface flags (like `SIOCGIFFLAGS`). */
   unsigned int ifa_flags;
+
   /** Interface address. */
   struct sockaddr* ifa_addr;
+
+
+
   /** Interface netmask. */
   struct sockaddr* ifa_netmask;
 
@@ -80,7 +84,7 @@ struct ifaddrs {
  *
  * Available since API level 24.
  */
-int getifaddrs(struct ifaddrs** __list_ptr) __INTRODUCED_IN(24);
+int myGetifaddrs(struct ifaddrs** __list_ptr) __INTRODUCED_IN(24);
 
 /**
  * [freeifaddrs(3)](http://man7.org/linux/man-pages/man3/freeifaddrs.3.html) frees a linked list
