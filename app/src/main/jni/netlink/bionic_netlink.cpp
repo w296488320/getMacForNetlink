@@ -113,8 +113,25 @@ bool NetlinkConnection::ReadResponses(void callback(void*, nlmsghdr*), void* out
   // Read through all the responses, handing interesting ones to the callback.
   ssize_t bytes_read;
 
-while ((bytes_read = TEMP_FAILURE_RETRY(raw_syscall(__NR_recvfrom,fd_, data_, size_, 0, NULL,0))) > 0) {
-    auto* hdr = reinterpret_cast<nlmsghdr*>(data_);
+  struct iovec iov{};
+  iov.iov_base = data_;
+  iov.iov_len = size_;
+
+  struct sockaddr_nl nladdr{};
+  struct msghdr msg = {
+          .msg_name = &nladdr,
+          .msg_namelen = sizeof(nladdr),
+          .msg_iov = &iov,
+          .msg_iovlen = 1,
+  };
+
+
+
+//while ((bytes_read = TEMP_FAILURE_RETRY(raw_syscall(__NR_recvfrom,fd_, data_, size_, 0, NULL,0))) > 0) {
+//    auto* hdr = reinterpret_cast<nlmsghdr*>(data_);
+
+while ((bytes_read = TEMP_FAILURE_RETRY(raw_syscall(__NR_recvmsg,fd_,&msg, 0))) > 0){
+    auto* hdr = reinterpret_cast<nlmsghdr*>(msg.msg_iov->iov_base);
 
     for (; NLMSG_OK(hdr, static_cast<size_t>(bytes_read)); hdr = NLMSG_NEXT(hdr, bytes_read)) {
       //判断是否读取结束,否则读取callback
