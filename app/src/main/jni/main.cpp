@@ -126,7 +126,7 @@ int listmacaddrs() {
                     if (ret != 0) {
                         LOGE("AF_INET6  getnameinfo() failed   %s  ",gai_strerror(ret))
                     }
-                    LOGE("AF_INET6  %s  ",host)
+                    LOGE("AF_INET6 %s %s  ",(ifaptr)->ifa_name,host)
                 }
             }
 
